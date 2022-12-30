@@ -25,6 +25,7 @@ var s *serial.Port
 var cfg *ini.File
 var err error
 var cfg2 gmccfg
+var acpm _acpm
 
 type gmccfg struct {
 	calibrate1_cpm uint16
@@ -33,6 +34,11 @@ type gmccfg struct {
 	calibrate2_sv  float32
 	calibrate3_cpm uint16
 	calibrate3_sv  float32
+}
+
+type _acpm struct {
+	count uint32
+	total uint64
 }
 
 func sendCommand(command string) []byte {
@@ -85,6 +91,10 @@ func getCpm() uint16 {
 	buf := sendCommand("<GETCPM>>")
 	val := binary.BigEndian.Uint16(buf)
 	log.Infof("%d", val)
+
+	acpm.count++
+	acpm.total += uint64(val)
+
 	return val
 }
 
@@ -98,6 +108,14 @@ func calcSv(cfg gmccfg, cpm uint16) float32 {
 	log.Infof("%0.2f μSv\n", cal_sv*float32(cpm)/1000)
 
 	return cal_sv
+}
+
+func calcAcpm() float32 {
+	log.Info("Calculating Average CPM")
+	val := float32(acpm.total) / float32(acpm.count)
+	log.Infof("%0.2f\n", val)
+
+	return val
 }
 
 func getVolt() float32 {
@@ -159,5 +177,6 @@ func main() {
 		log.Notice("Tick")
 		cpm := getCpm()
 		calcSv(cfg2, cpm)
+		calcAcpm()
 	}
 }
