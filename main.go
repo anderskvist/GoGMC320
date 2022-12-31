@@ -213,7 +213,7 @@ func submitDataRadmonOrg(cpm uint16) {
 	user := cfg.Section("radmon.org").Key("user").MustString("")
 	password := cfg.Section("radmon.org").Key("password").MustString("")
 
-	log.Debug("Sending data to radmon.org")
+	log.Notice("Sending data to radmon.org")
 	req, err := http.NewRequest("GET", "https://radmon.org/radmon.php?function=submit&user="+user+"&password="+password+"&value="+strconv.FormatInt(int64(cpm), 10)+"&unit=CPM", nil)
 
 	client := &http.Client{Timeout: time.Second * 10}
@@ -233,7 +233,7 @@ func SaveToInflux(cpm uint16, usv float32, acpm float32, voltage float32, temper
 		Password: cfg.Section("influxdb").Key("password").String(),
 	})
 
-	log.Debug("Sending data to influxdb")
+	log.Notice("Sending data to influxdb")
 
 	if err != nil {
 		log.Fatal(err)
