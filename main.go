@@ -16,6 +16,7 @@ import (
 	"strconv"
 	"time"
 
+	client "github.com/influxdata/influxdb1-client/v2"
 	"github.com/tarm/serial"
 	"gopkg.in/ini.v1"
 
@@ -175,6 +176,54 @@ func submitDataRadmonOrg(cpm uint16) {
 	log.Debug("HTTP Status: ", resp.StatusCode)
 }
 
+func SaveToInflux(cpm uint16, usv float32, acpm float32) {
+
+	c, err := client.NewHTTPClient(client.HTTPConfig{
+		Addr:     cfg.Section("influxdb").Key("url").String(),
+		Username: cfg.Section("influxdb").Key("username").String(),
+		Password: cfg.Section("influxdb").Key("password").String(),
+	})
+
+	log.Debug("Sending data to influxdb")
+
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer c.Close()
+
+	// Create a new point batch
+	bp, err := client.NewBatchPoints(client.BatchPointsConfig{
+		Database:  cfg.Section("influxdb").Key("database").String(),
+		Precision: "s",
+	})
+
+	//tags := map[string]string{"fabnr": strconv.Itoa(dviData.Fabnr)}
+
+	data := map[string]interface{}{
+		"CPM":  cpm,
+		"USV":  usv,
+		"ACPM": acpm,
+	}
+
+	points, err := client.NewPoint(
+		"data",
+		nil,
+		data,
+		time.Now(),
+	)
+	bp.AddPoint(points)
+
+	// Write the batch
+	if err := c.Write(bp); err != nil {
+		log.Fatal(err)
+	}
+
+	// Close client resources
+	if err := c.Close(); err != nil {
+		log.Fatal(err)
+	}
+}
+
 func main() {
 
 	cfg, err = ini.Load(os.Args[1])
@@ -195,8 +244,9 @@ func main() {
 	for ; true; <-ticker.C {
 		log.Notice("Tick")
 		cpm := getCpm()
-		calcSv(cfg2, cpm)
-		calcAcpm()
+		usv := calcSv(cfg2, cpm)
+		acpm := calcAcpm()
 		submitDataRadmonOrg(cpm)
+		SaveToInflux(cpm, usv, acpm)
 	}
 }
