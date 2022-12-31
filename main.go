@@ -149,6 +149,14 @@ func getTemp() float32 {
 	return val
 }
 
+func getGyro() {
+	buf := sendCommand("<GETGYRO>>")
+	x := binary.BigEndian.Uint16(buf[0:2])
+	y := binary.BigEndian.Uint16(buf[2:4])
+	z := binary.BigEndian.Uint16(buf[4:6])
+	log.Infof("%d %d %d", x, y, z)
+}
+
 func getCfg() gmccfg {
 	buf := sendCommand("<GETCFG>>")
 	if len(buf) != 256 {
@@ -177,6 +185,7 @@ func initCommunication() {
 	deviceVersion = getVer()
 	deviceSerial = getSerial()
 	//getDateTime()
+	//getGyro()
 	cfg2 = getCfg()
 }
 
