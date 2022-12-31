@@ -90,7 +90,7 @@ func getDateTime() time.Time {
 func getCpm() uint16 {
 	buf := sendCommand("<GETCPM>>")
 	val := binary.BigEndian.Uint16(buf)
-	log.Infof("%d", val)
+	log.Infof("%d CPM", val)
 
 	acpm.count++
 	acpm.total += uint64(val)
@@ -113,7 +113,7 @@ func calcSv(cfg gmccfg, cpm uint16) float32 {
 func calcAcpm() float32 {
 	log.Info("Calculating Average CPM")
 	val := float32(acpm.total) / float32(acpm.count)
-	log.Infof("%0.2f\n", val)
+	log.Infof("%0.2f ACPM", val)
 
 	return val
 }
