@@ -93,7 +93,7 @@ func getDateTime() time.Time {
 	second := buf[5]
 
 	t := time.Date(2000+int(year), time.Month(int(month)), int(day), int(hour), int(minute), int(second), 0, time.UTC)
-	log.Infof("%s\n", t.UTC())
+	log.Noticef("Device time: %s\n", t.UTC())
 
 	return t
 }
@@ -199,11 +199,9 @@ func initCommunication() {
 	deviceVersion = getVer()
 	deviceSerial = getSerial()
 
-	// Read old time
-	getDateTime()
 	// Set correct time
 	setDateTime()
-	// Read time again
+	// Read time
 	getDateTime()
 	//getGyro()
 	cfg2 = getCfg()
