@@ -10,6 +10,7 @@ package main
 
 import (
 	"encoding/binary"
+	"encoding/hex"
 	"math"
 	"net/http"
 	"os"
@@ -29,6 +30,8 @@ var cfg *ini.File
 var err error
 var cfg2 gmccfg
 var acpm _acpm
+var deviceSerial string
+var deviceVersion string
 
 type gmccfg struct {
 	calibrate1_cpm uint16
@@ -72,6 +75,11 @@ func sendCommand(command string) []byte {
 func getVer() string {
 	buf := sendCommand("<GETVER>>")
 	return string(buf)
+}
+
+func getSerial() string {
+	buf := sendCommand("<GETSERIAL>>")
+	return hex.EncodeToString(buf)
 }
 
 func getDateTime() time.Time {
@@ -154,7 +162,8 @@ func initCommunication() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	//getVer()
+	deviceVersion = getVer()
+	deviceSerial = getSerial()
 	//getVolt()
 	//getDateTime()
 	cfg2 = getCfg()
@@ -197,7 +206,7 @@ func SaveToInflux(cpm uint16, usv float32, acpm float32) {
 		Precision: "s",
 	})
 
-	//tags := map[string]string{"fabnr": strconv.Itoa(dviData.Fabnr)}
+	tags := map[string]string{"serial": deviceSerial, "version": deviceVersion}
 
 	data := map[string]interface{}{
 		"CPM":  cpm,
@@ -207,7 +216,7 @@ func SaveToInflux(cpm uint16, usv float32, acpm float32) {
 
 	points, err := client.NewPoint(
 		"data",
-		nil,
+		tags,
 		data,
 		time.Now(),
 	)
