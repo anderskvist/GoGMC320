@@ -115,7 +115,7 @@ func setDateTime() {
 func getCpm() uint16 {
 	buf := sendCommand("<GETCPM>>")
 	val := binary.BigEndian.Uint16(buf)
-	log.Infof("%d CPM", val)
+	log.Noticef("%d CPM", val)
 
 	acpm.count++
 	acpm.total += uint64(val)
@@ -124,22 +124,22 @@ func getCpm() uint16 {
 }
 
 func calcSv(cfg gmccfg, cpm uint16) float32 {
-	log.Info("Calculating μSv (micro sievert)")
+	log.Notice("Calculating μSv (micro sievert)")
 	cal1_sv := cfg.calibrate1_sv * 1000 / float32(cfg.calibrate1_cpm)
 	cal2_sv := cfg.calibrate2_sv * 1000 / float32(cfg.calibrate2_cpm)
 	cal3_sv := cfg.calibrate3_sv * 1000 / float32(cfg.calibrate3_cpm)
 	cal_sv := (cal1_sv + cal2_sv + cal3_sv) / 3
 
 	val := cal_sv * float32(cpm) / 1000
-	log.Infof("%0.2f μSv\n", val)
+	log.Noticef("%0.2f μSv\n", val)
 
 	return val
 }
 
 func calcAcpm() float32 {
-	log.Info("Calculating Average CPM")
+	log.Notice("Calculating Average CPM")
 	val := float32(acpm.total) / float32(acpm.count)
-	log.Infof("%0.2f ACPM", val)
+	log.Noticef("%0.2f ACPM", val)
 
 	return val
 }
