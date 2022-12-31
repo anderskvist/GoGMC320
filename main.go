@@ -107,9 +107,10 @@ func calcSv(cfg gmccfg, cpm uint16) float32 {
 	cal3_sv := cfg.calibrate3_sv * 1000 / float32(cfg.calibrate3_cpm)
 	cal_sv := (cal1_sv + cal2_sv + cal3_sv) / 3
 
-	log.Infof("%0.2f μSv\n", cal_sv*float32(cpm)/1000)
+	val := cal_sv * float32(cpm) / 1000
+	log.Infof("%0.2f μSv\n", val)
 
-	return cal_sv
+	return val
 }
 
 func calcAcpm() float32 {
