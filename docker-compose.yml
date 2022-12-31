@@ -1,0 +1,11 @@
+version: "3.7"
+services:
+  GoGMC320:
+    build: .
+    user: root
+    restart: unless-stopped
+    devices:
+      - "/dev/bus/usb"
+    logging:
+      options:
+        max-size: "30m"
