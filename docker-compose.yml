@@ -1,11 +1,13 @@
 version: "3.7"
 services:
-  GoGMC320:
+  gogmc320:
     build: .
     user: root
     restart: unless-stopped
-    devices:
-      - "/dev/bus/usb"
+    volumes:
+      - "./config.ini:/config.ini"
+      - "/dev/ttyUSB0:/dev/ttyUSB0"
     logging:
       options:
         max-size: "30m"
+    privileged: true
