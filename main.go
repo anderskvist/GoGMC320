@@ -98,6 +98,20 @@ func getDateTime() time.Time {
 	return t
 }
 
+func setDateTime() {
+	now := time.Now()
+	bs := make([]byte, 6)
+
+	bs[0] = byte(now.Year() - 2000)
+	bs[1] = byte(now.Month())
+	bs[2] = byte(now.Day())
+	bs[3] = byte(now.Hour())
+	bs[4] = byte(now.Minute())
+	bs[5] = byte(now.Second())
+
+	sendCommand("<SETDATETIME" + string(bs) + ">>")
+}
+
 func getCpm() uint16 {
 	buf := sendCommand("<GETCPM>>")
 	val := binary.BigEndian.Uint16(buf)
@@ -184,7 +198,13 @@ func initCommunication() {
 	}
 	deviceVersion = getVer()
 	deviceSerial = getSerial()
-	//getDateTime()
+
+	// Read old time
+	getDateTime()
+	// Set correct time
+	setDateTime()
+	// Read time again
+	getDateTime()
 	//getGyro()
 	cfg2 = getCfg()
 }
