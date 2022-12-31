@@ -137,6 +137,18 @@ func getVolt() float32 {
 	return val
 }
 
+func getTemp() float32 {
+	buf := sendCommand("<GETTEMP>>")
+	// first byte is integer, second byte is decimal
+	val := float32(buf[0]) + float32(buf[1]/10)
+	// if not 0, it's a negative number
+	if buf[2] != 0 {
+		val = val * -1
+	}
+	log.Infof("%f", val)
+	return val
+}
+
 func getCfg() gmccfg {
 	buf := sendCommand("<GETCFG>>")
 	if len(buf) != 256 {
@@ -164,7 +176,6 @@ func initCommunication() {
 	}
 	deviceVersion = getVer()
 	deviceSerial = getSerial()
-	//getVolt()
 	//getDateTime()
 	cfg2 = getCfg()
 }
@@ -185,7 +196,7 @@ func submitDataRadmonOrg(cpm uint16) {
 	log.Debug("HTTP Status: ", resp.StatusCode)
 }
 
-func SaveToInflux(cpm uint16, usv float32, acpm float32) {
+func SaveToInflux(cpm uint16, usv float32, acpm float32, voltage float32, temperature float32) {
 
 	c, err := client.NewHTTPClient(client.HTTPConfig{
 		Addr:     cfg.Section("influxdb").Key("url").String(),
@@ -209,9 +220,11 @@ func SaveToInflux(cpm uint16, usv float32, acpm float32) {
 	tags := map[string]string{"serial": deviceSerial, "version": deviceVersion}
 
 	data := map[string]interface{}{
-		"CPM":  cpm,
-		"USV":  usv,
-		"ACPM": acpm,
+		"CPM":         cpm,
+		"USV":         usv,
+		"ACPM":        acpm,
+		"Temperature": temperature,
+		"Voltage":     voltage,
 	}
 
 	points, err := client.NewPoint(
@@ -255,7 +268,11 @@ func main() {
 		cpm := getCpm()
 		usv := calcSv(cfg2, cpm)
 		acpm := calcAcpm()
+
+		voltage := getVolt()
+		temperature := getTemp()
+
 		submitDataRadmonOrg(cpm)
-		SaveToInflux(cpm, usv, acpm)
+		SaveToInflux(cpm, usv, acpm, voltage, temperature)
 	}
 }
