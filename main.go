@@ -23,6 +23,7 @@ import (
 
 	"github.com/anderskvist/GoHelpers/log"
 	"github.com/anderskvist/GoHelpers/version"
+	"github.com/anderskvist/GoHelpers/watchdog"
 )
 
 var s *serial.Port
@@ -289,9 +290,13 @@ func main() {
 	poll := cfg.Section("main").Key("poll").MustInt(60)
 	log.Infof("Polltime is %d seconds.\n", poll)
 
+	go watchdog.Activate(cfg.Section("watchdog").Key("interval").MustInt(300))
+
 	ticker := time.NewTicker(time.Duration(poll) * time.Second)
 	for ; true; <-ticker.C {
 		log.Notice("Tick")
+		watchdog.Poke()
+
 		cpm := getCpm()
 		usv := calcSv(cfg2, cpm)
 		acpm := calcAcpm()
