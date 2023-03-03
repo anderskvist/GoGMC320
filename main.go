@@ -210,7 +210,7 @@ func initCommunication() {
 
 func submitDataRadmonOrg(cpm uint16, username string, password string) {
 	log.Notice("Sending data to radmon.org")
-	req, err := http.NewRequest("GET", "https://radmon.org/radmon.php?function=submit&user="+user+"&password="+password+"&value="+strconv.FormatInt(int64(cpm), 10)+"&unit=CPM", nil)
+	req, err := http.NewRequest("GET", "https://radmon.org/radmon.php?function=submit&user="+username+"&password="+password+"&value="+strconv.FormatInt(int64(cpm), 10)+"&unit=CPM", nil)
 
 	client := &http.Client{Timeout: time.Second * 10}
 	resp, err := client.Do(req)
