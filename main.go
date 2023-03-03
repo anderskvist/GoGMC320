@@ -208,10 +208,7 @@ func initCommunication() {
 	cfg2 = getCfg()
 }
 
-func submitDataRadmonOrg(cpm uint16) {
-	user := cfg.Section("radmon.org").Key("user").MustString("")
-	password := cfg.Section("radmon.org").Key("password").MustString("")
-
+func submitDataRadmonOrg(cpm uint16, username string, password string) {
 	log.Notice("Sending data to radmon.org")
 	req, err := http.NewRequest("GET", "https://radmon.org/radmon.php?function=submit&user="+user+"&password="+password+"&value="+strconv.FormatInt(int64(cpm), 10)+"&unit=CPM", nil)
 
@@ -304,7 +301,12 @@ func main() {
 		voltage := getVolt()
 		temperature := getTemp()
 
-		submitDataRadmonOrg(cpm)
+		radmon_username := cfg.Section("radmon.org").Key("user").MustString("")
+		radmon_password := cfg.Section("radmon.org").Key("password").MustString("")
+
+		if radmon_username != "" && radmon_password != "" {
+			submitDataRadmonOrg(cpm, radmon_username, radmon_password)
+		}
 		SaveToInflux(cpm, usv, acpm, voltage, temperature)
 	}
 }
