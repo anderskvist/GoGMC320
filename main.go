@@ -218,7 +218,7 @@ func submitDataRadmonOrg(cpm uint16) {
 	client := &http.Client{Timeout: time.Second * 10}
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Fatal("Error reading response. ", err)
+		log.Error("Error reading response. ", err)
 	}
 	defer resp.Body.Close()
 	log.Debug("HTTP Status: ", resp.StatusCode)
